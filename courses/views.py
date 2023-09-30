@@ -1,24 +1,10 @@
+# views.py
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import Course, CourseDelivery
-from .serializers import CourseSerializer, CourseDeliverySerializer
+from .serializers import CourseSerializer, CourseDeliverySerializer, CustomCourseDeliverySerializer
 from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
-class CourseInfoView(APIView):
-    def get(self, request, pk):
-        try:
-            course = Course.objects.get(pk=pk)
-            course_data = {
-                'title': course.title,
-                'course_id': course.course_id,
-            }
-            return Response(course_data)
-        except Course.DoesNotExist:
-            return Response({'error': 'Course not found'}, status=404)
-
 
 class CourseListCreateView(generics.ListCreateAPIView):
     queryset = Course.objects.all()
@@ -41,7 +27,7 @@ class InstanceListView(generics.ListAPIView):
     serializer_class = CourseDeliverySerializer
 
 class InstanceListByYearSemesterView(generics.ListAPIView):
-    serializer_class = CourseDeliverySerializer
+    serializer_class = CustomCourseDeliverySerializer
 
     def get_queryset(self):
         year = self.kwargs['year']
@@ -52,6 +38,21 @@ class InstanceDetailView(generics.RetrieveDestroyAPIView):
     queryset = CourseDelivery.objects.all()
     serializer_class = CourseDeliverySerializer
 
-class InstanceDeleteView(generics.DestroyAPIView):
-    queryset = CourseDelivery.objects.all()
-    serializer_class = CourseDeliverySerializer
+
+class CourseDeliveryDeleteView(generics.DestroyAPIView):
+    serializer_class = CustomCourseDeliverySerializer
+
+    def get_object(self):
+        year = self.kwargs['year']
+        semester = self.kwargs['semester']
+        course_id = self.kwargs['pk']
+
+        try:
+            return CourseDelivery.objects.get(year=year, semester=semester, course_id=course_id)
+        except CourseDelivery.DoesNotExist:
+            raise Http404
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

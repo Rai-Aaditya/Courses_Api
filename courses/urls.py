@@ -9,5 +9,5 @@ urlpatterns = [
     path('api/instances/', views.InstanceListView.as_view(), name='instance-list'),
     path('api/instances/<int:year>/<int:semester>/', views.InstanceListByYearSemesterView.as_view(), name='instance-list-by-year-semester'),
     path('api/instances/<int:year>/<int:semester>/<int:pk>/', views.InstanceDetailView.as_view(), name='instance-detail'),
-    path('api/instances/<int:year>/<int:semester>/<int:pk>/delete/', views.InstanceDeleteView.as_view(), name='instance-delete'),
+    path('api/instances/<int:year>/<int:semester>/<int:pk>', views.CourseDeliveryDeleteView.as_view(), name='instance-delete'),
 ]
